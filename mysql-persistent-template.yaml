@@ -162,7 +162,7 @@ items:
         spec:
           containers:
           - name: todolist
-            image:  quay.io/rhn_engineering_whayutin/todolist-mariadb-go-centos:6
+            image:  quay.io/rhn_engineering_whayutin/todolist-mariadb-go-centos:7
             env:
               - name: foo
                 value: bar
