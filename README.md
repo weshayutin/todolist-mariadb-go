@@ -18,7 +18,17 @@ docker/podman exec -it mariadb mariadb -uroot -proot -e 'CREATE DATABASE todolis
 
 ```
 go mod tidy
-go run todolist.go
+```
+* Update the db for a local connection:
+HERE: https://github.com/weshayutin/todolist-mariadb-go/blob/main/todolist.go#L44
 
+```
+var db, _ = gorm.Open("mysql", "root:root@tcp/todolist?charset=utf8&parseTime=True")
+
+```
+
+Execute:
+```
+go run todolist.go
 ```
 
