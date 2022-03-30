@@ -37,7 +37,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var db, _ = gorm.Open("mysql", "root:root@/todolist?charset=utf8&parseTime=True&loc=Local")
+// remote connection
+var db, _ = gorm.Open("mysql", "root:root@tcp(mariadb:3306)/todolist?tls=skip-verify&charset=utf8&parseTime=True")
+
+// local connection
+//var db, _ = gorm.Open("mysql", "root:root@tcp/todolist?charset=utf8&parseTime=True")
 
 type TodoItemModel struct {
 	Id          int `gorm:"primary_key"`
