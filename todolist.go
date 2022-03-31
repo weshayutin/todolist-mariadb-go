@@ -38,7 +38,7 @@ import (
 )
 
 // remote connection
-var db, _ = gorm.Open("mysql", "changeme:changeme@(mariadb:3306)/todolist?charset=utf8&parseTime=True")
+var db, _ = gorm.Open("mysql", "changeme:changeme@(mysql:3306)/todolist?charset=utf8&parseTime=True")
 
 // local connection
 //  var db, _ = gorm.Open("mysql", "root:root@tcp/todolist?charset=utf8&parseTime=True")
