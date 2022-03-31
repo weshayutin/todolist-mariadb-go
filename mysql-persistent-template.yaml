@@ -162,7 +162,7 @@ items:
         spec:
           containers:
           - name: todolist
-            image:  quay.io/rhn_engineering_whayutin/todolist-mariadb-go-centos:7
+            image:  quay.io/rhn_engineering_whayutin/todolist-mariadb-go-centos:10
             env:
               - name: foo
                 value: bar
@@ -178,12 +178,8 @@ items:
     metadata:
       name: todolist-route
       namespace: mysql-persistent
-      labels:
-        app: todolist
-        service: todolist
     spec:
+      path: "/"
       to:
         kind: Service
         name: todolist
-      port:
-        targetPort: web

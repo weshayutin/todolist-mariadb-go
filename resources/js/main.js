@@ -1,4 +1,4 @@
-var server = "http://localhost:8000/";
+var server = "/";
 var todolist_server = server + "todo"
 
 function getCompletedTodos(){
