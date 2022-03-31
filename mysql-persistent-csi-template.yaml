@@ -1,0 +1,186 @@
+apiVersion: v1
+kind: List
+items:
+  - kind: Namespace
+    apiVersion: v1
+    metadata:
+      name: mysql-persistent
+      labels:
+        app: mariadb
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: mysql-persistent-sa
+      namespace: mysql-persistent
+      labels:
+        component: mysql-persistent
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: mariadb
+      namespace: mysql-persistent
+      labels:
+        app: mariadb
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      storageClassName: gp2-csi
+      resources:
+        requests:
+          storage: 1Gi
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: mediawiki
+      namespace: mysql-persistent
+    spec:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 1Gi
+  - kind: SecurityContextConstraints
+    apiVersion: security.openshift.io/v1
+    metadata:
+      name: mysql-persistent-scc
+    allowPrivilegeEscalation: true
+    allowPrivilegedContainer: true
+    runAsUser:
+      type: RunAsAny
+    seLinuxContext:
+      type: RunAsAny
+    fsGroup:
+      type: RunAsAny
+    supplementalGroups:
+      type: RunAsAny
+    volumes:
+    - '*'
+    users:
+    - system:admin
+    - system:serviceaccount:mysql-persistent:mysql-persistent-sa
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      annotations:
+        template.openshift.io/expose-uri: mariadb://{.spec.clusterIP}:{.spec.ports[?(.name=="mysql")].port}
+      name: mariadb
+      namespace: mysql-persistent
+      labels:
+        app: mariadb
+        service: mariadb
+    spec:
+      ports:
+      - protocol: TCP
+        name: mariadb
+        port: 3306
+      selector:
+        app: mariadb
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      annotations:
+        template.alpha.openshift.io/wait-for-ready: 'true'
+      name: mariadb
+      namespace: mysql-persistent
+      labels:
+        e2e-app: "true"
+    spec:
+      selector:
+        matchLabels:
+          app: mariadb
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          labels:
+            e2e-app: "true"
+            app: mariadb
+        spec:
+          serviceAccountName: mysql-persistent-sa
+          containers:
+          - image: registry.redhat.io/rhel8/mariadb-105:latest
+            name: mariadb
+            securityContext:
+              privileged: true
+            env:
+              - name: MYSQL_USER
+                value: changeme
+              - name: MYSQL_PASSWORD
+                value: changeme
+              - name: MYSQL_ROOT_PASSWORD
+                value: root
+              - name: MYSQL_DATABASE
+                value: todolist
+            ports:
+            - containerPort: 3306
+              name: mariadb
+            resources:
+              limits:
+                memory: 512Mi
+            volumeMounts:
+            - name: mariadb-data
+              mountPath: /var/lib/mariadb
+          volumes:
+          - name: mariadb-data
+            persistentVolumeClaim:
+              claimName: mariadb
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: todolist
+      namespace: mysql-persistent
+      labels:
+        app: todolist
+        service: todolist
+    spec:
+      ports:
+        - name: web
+          port: 8000
+          targetPort: 8000
+      selector:
+        app: todolist
+        service: todolist
+  - apiVersion: apps.openshift.io/v1
+    kind: DeploymentConfig
+    metadata:
+      name: todolist
+      namespace: mysql-persistent
+      labels:
+        app: todolist
+        service: todolist
+    spec:
+      replicas: 1
+      selector:
+        app: todolist
+        service: todolist
+      strategy:
+        type: Recreate
+      template:
+        metadata:
+          labels:
+            app: todolist
+            service: todolist
+        spec:
+          containers:
+          - name: todolist
+            image:  quay.io/rhn_engineering_whayutin/todolist-mariadb-go:latest
+            env:
+              - name: foo
+                value: bar
+            ports:
+              - containerPort: 8000
+                protocol: TCP
+          initContainers:
+          - name: init-myservice
+            image: registry.access.redhat.com/ubi8/ubi:latest
+            command: ['sh', '-c', 'sleep 10; until getent hosts mariadb; do echo waiting for mariadb; sleep 5; done;']
+  - apiVersion: route.openshift.io/v1
+    kind: Route
+    metadata:
+      name: todolist-route
+      namespace: mysql-persistent
+    spec:
+      path: "/"
+      to:
+        kind: Service
+        name: todolist
