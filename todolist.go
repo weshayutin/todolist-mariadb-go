@@ -158,11 +158,10 @@ func prepopulate() {
 }
 
 func main() {
-
+	defer db.Close()
 	previousDb := db.Take(&TodoItemModel{})
 	if previousDb.Error != nil {
 		log.Info("A running instance of the db: todolist not found, creating")
-		defer db.Close()
 		db.Debug().DropTableIfExists(&TodoItemModel{})
 		db.Debug().AutoMigrate(&TodoItemModel{})
 		prepopulate()
