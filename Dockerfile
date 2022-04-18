@@ -1,7 +1,7 @@
 #FROM golang:1.17.8-alpine
-FROM ubi8
+FROM ubi8/ubi-minimal
 USER root
-RUN dnf install -y golang vim
+RUN microdnf install -y golang vim
 COPY resources/ /resources/
 COPY index.html .
 COPY app .
