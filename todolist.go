@@ -184,5 +184,6 @@ func main() {
 		AllowedMethods: []string{"GET", "POST", "DELETE", "PATCH", "OPTIONS"},
 	}).Handler(router)
 
-	http.ListenAndServe(":8000", handler)
+	//http.ListenAndServe(":8000", handler)
+	http.ListenAndServe(":80", handler)
 }
