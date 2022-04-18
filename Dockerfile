@@ -1,5 +1,5 @@
 #FROM golang:1.17.8-alpine
-FROM ubi8/ubi-minimal
+FROM registry.access.redhat.com/ubi8/ubi-minimal
 USER root
 RUN microdnf install -y golang vim
 COPY resources/ /resources/
