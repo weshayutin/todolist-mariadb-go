@@ -54,9 +54,10 @@ document.getElementById('item').addEventListener('keydown', function (e) {
 
 function addItem (value) {
   var id = addItemToBackend(value);
-  console.log(id);
+  console.log("add item to DOM:", id)
   addItemToDOM(value, id);
-  document.getElementById('item').value = '';
+  //document.getElementById('item').value = '';
+  document.getElementById('item').value = id;
 
   data.todo.push(value);
 }
@@ -64,18 +65,21 @@ function addItem (value) {
 function addItemToBackend (value) {
 	var result = null;
 	payload = {'description': value};
-	console.log(payload);
+	//console.log("payload: " + payload);
 	$.ajax({
-                type: "POST",
-                url: todolist_server,
-		data: payload,
-		async: false,
-                success: function(data){
-                        result = data;
-			console.log(data);
-                }
-        });
-        return result.Id;
+          type: "POST",
+          url: todolist_server,
+          data: payload,
+          async: false,
+          success: function(data){
+                  result = data;
+                  console.log("resulting data:")
+                  console.log(data[0]);
+          }
+  });
+        //console.log("addItemToBackend, result:" + result)
+        //console.log("addItemToBackend, ID:" + result.Id + "")
+        return result[0].Id;
 }
 
 function renderTodoList() {
@@ -154,9 +158,11 @@ function updateItemInBackend (item, completed) {
 		data: payload,
                 async: false,
                 success: function(data) {
-                        console.log(data)
+                  console.log(data)
+                  console.log("Successfully udpated item")
                 }
         });
+
 }
 
 
