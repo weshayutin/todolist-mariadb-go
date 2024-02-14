@@ -83,6 +83,27 @@ def checkToDoLists(completed):
   response_dict = json.loads(response.text)
   return response_dict
 
+def deleteToDoItems(item):
+  """Post data to the todo application
+
+  Args:
+    item: dict
+
+  Returns:
+    bool
+  """
+
+  endpoint = "http://localhost:8000/todo/" + str(item["Id"])
+  # Send a POST request with the data and the endpoint URL
+  response = requests.delete(endpoint)
+  # Check the status code of the response
+  if response.status_code == 201 or response.status_code == 200:
+      print("Deleted item " + str(item["Id"]))
+      return True
+  else:
+      print("Failed to delete item " + str(item["Id"]))
+      return False
+
 
 
 def main():
@@ -104,6 +125,7 @@ def main():
    print("INCOMPLETE ITEMS:")
    print(incomplete)
 
+   # test complete or incomplete
    found_completed = False
    for i in completed:
        if test1["Description"] == i["Description"]:
@@ -115,9 +137,36 @@ def main():
          found_incomplete = True
    
    if found_completed == False or found_incomplete == False:
-      print("FAILED TEST")
+      print("FAILED complete / incomplete TEST")
    else:
       print("SUCCESS!")
+
+   # Delete items
+   deleteToDoItems(test1)
+   deleteToDoItems(test3)
+   completed = checkToDoLists(True)
+   incomplete = checkToDoLists(False)
+   print("COMPLETED ITEMS:")
+   print(completed)
+   print("INCOMPLETE ITEMS:")
+   print(incomplete)
+
+   # Test deleted items
+   found_completed = False
+   for i in completed:
+       if test1["Description"] == i["Description"]:
+          found_completed = True
+
+   found_incomplete = False
+   for i in incomplete:
+      if test3["Description"] == i["Description"]:
+         found_incomplete = True
+    
+   if found_completed == True or found_incomplete == True:
+      print("FAILED Delete TEST")
+   else:
+      print("SUCCESS!")
+   
 
 
 if __name__ == "__main__":
