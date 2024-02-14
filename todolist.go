@@ -38,20 +38,38 @@ import (
 	"gorm.io/gorm"
 )
 
-// remote connection
-//var db, _ = gorm.Open("mysql", "changeme:changeme@(mysql:3306)/todolist?charset=utf8&parseTime=True")
+var db *gorm.DB
 
-// local connection
-// var db, _ = gorm.Open("mysql", "root:root@tcp/todolist?charset=utf8&parseTime=True")
-// var db *gorm.DB
-var db, _ = connectToMariaDB()
+func connectToDB() {
+	remote, err := connectToMariaDBRemote()
+	if err != nil {
+		local, _ := connectToMariaDBLocal()
+		db = local
+	} else {
+		db = remote
+	}
+}
 
-//var db, _ = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
-func connectToMariaDB() (*gorm.DB, error) {
+// connect to mariadb at 127.0.0.1
+func connectToMariaDBLocal() (*gorm.DB, error) {
+	log.Info("Attempting to connect to: test:test@tcp(127.0.0.1:3306)/todolist")
 	dsn := "test:test@tcp(127.0.0.1:3306)/todolist?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
+		log.Error("Connection failed")
+		return nil, err
+	}
+
+	return db, nil
+}
+
+// connect to mariadb at mysql address defined in docker
+func connectToMariaDBRemote() (*gorm.DB, error) {
+	log.Info("Attempting to connect to: changeme:changeme@tcp(mysql:3306)/todolist")
+	dsn := "changeme:changeme@tcp(mysql:3306)/todolist?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Error("Connection failed")
 		return nil, err
 	}
 
@@ -187,6 +205,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	connectToDB()
 	db.Migrator().CreateTable(&TodoItemModel{})
 	fs := http.FileServer(http.Dir("./resources/"))
 
