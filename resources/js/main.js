@@ -56,9 +56,8 @@ function addItem (value) {
   var id = addItemToBackend(value);
   console.log("add item to DOM:", id)
   addItemToDOM(value, id);
-  //document.getElementById('item').value = '';
-  document.getElementById('item').value = id;
-
+  //clear the activity item text
+  document.getElementById('item').value = '';
   data.todo.push(value);
 }
 
