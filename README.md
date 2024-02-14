@@ -19,21 +19,15 @@ docker/podman exec -it mariadb mariadb -uroot -proot -e 'CREATE DATABASE todolis
 ```
 go mod tidy
 ```
-* Update the db for a local connection:
-HERE: https://github.com/weshayutin/todolist-mariadb-go/blob/main/todolist.go#L44
-
-```
-var db, _ = gorm.Open("mysql", "root:root@tcp/todolist?charset=utf8&parseTime=True")
-
-```
 
 Execute:
 ```
 go run todolist.go
 ```
 
-Initial Page should have two entries, one complete and one incomplete.
-
+Navigate your browser to:
+ * http://localhost:8000
+ * http://fqdn
 
 Show items in the db:
 ```
@@ -81,10 +75,6 @@ MariaDB [todolist]>
 
 
 ## testing
-test build
-test2
-test3
-test4
-test5
-test6
+There are some basic curl and python tests in the tests directory where you can
+see the api is exercised and the database is populated.
 
