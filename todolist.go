@@ -187,15 +187,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	previousDb := db.Take(&TodoItemModel{})
-	if previousDb.RowsAffected >= 1 {
-		log.Info("A running instance of the db: todolist not found, creating")
-		db.Migrator().DropTable(&TodoItemModel{})
-		//db.Debug().DropTableIfExists(&TodoItemModel{})
-		db.Debug().AutoMigrate(&TodoItemModel{})
-		prepopulate()
-	}
-
+	db.Migrator().CreateTable(&TodoItemModel{})
 	fs := http.FileServer(http.Dir("./resources/"))
 
 	log.Info("Starting Todolist API server")
