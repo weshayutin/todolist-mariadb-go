@@ -13,6 +13,16 @@ docker/podman run -d -p 3306:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=root mar
 docker/podman exec -it mariadb mariadb -uroot -proot -e 'CREATE DATABASE todolist'
 
 ```
+### Note: Mariadb password settings:
+* localhost
+```
+dsn := "test:test@tcp(127.0.0.1:3306)/todolist?charset=utf8mb4&parseTime=True&loc=Local"
+```
+* As deployed on OpenShift with templates
+```
+dsn := "changeme:changeme@tcp(mysql:3306)/todolist?charset=utf8mb4&parseTime=True&loc=Local"
+```
+
 
 * Get the app running
 
@@ -73,8 +83,27 @@ MariaDB [todolist]>
 
 ![gnome-shell-screenshot-edww3e](https://user-images.githubusercontent.com/138787/160934609-a77798a1-3986-46a0-a334-a8b53ceccb7d.png)
 
+## Deploy to OpenShift
+```
+oc create -f mysql-persistent-template.yaml
+OR
+oc create -f mysql-persistent-csi-template.yaml -f pvc/$cloud.yaml 
+```
 
 ## testing
 There are some basic curl and python tests in the tests directory where you can
 see the api is exercised and the database is populated.
+```
+cd tests
+python test.py
+```
 
+## building
+Here's a quick example:
+```
+podman build  -t quay.io/rhn_engineering_whayutin/todolist-mariadb-go-2 .
+podman push
+```
+
+## updates
+* Note that the app will NO longer create two items in the the todo list at start up. 

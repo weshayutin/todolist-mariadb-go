@@ -1,5 +1,5 @@
 #FROM registry.access.redhat.com/ubi8/ubi-minimal
-FROM golang:1.17.8-alpine AS build-env
+FROM golang:1.22.0-alpine AS build-env
 RUN mkdir /build
 WORKDIR /build
 COPY *.go .

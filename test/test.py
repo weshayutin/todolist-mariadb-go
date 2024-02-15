@@ -4,6 +4,10 @@ import json
 import requests
 
 
+base_url = "http://localhost:8000"
+# example remote
+# base_url = "http://todolist-route-mysql-persistent.apps.cluster-wdh01102024g.wdh01102024g.mg.dog8code.com"
+
 def updateToDo(id, completed):
   """Update data to the todo application
 
@@ -20,7 +24,7 @@ def updateToDo(id, completed):
   }
 
   # Set the endpoint URL
-  endpoint = "http://localhost:8000/todo/" + str(id)
+  endpoint = base_url + "/todo/" + str(id)
   # Send a POST request with the data and the endpoint URL
   response = requests.post(endpoint, data=data)
   # Check the status code of the response
@@ -48,7 +52,7 @@ def createToDo(description, completed):
   }
 
   # Set the endpoint URL
-  endpoint = "http://localhost:8000/todo"
+  endpoint = base_url + "/todo"
   # Send a POST request with the data and the endpoint URL
   response = requests.post(endpoint, data=data)
   # Check the status code of the response
@@ -70,9 +74,9 @@ def checkToDoLists(completed):
   """
   # Set the endpoint URL
   if completed:
-    endpoint = "http://localhost:8000/todo-completed"
+    endpoint = base_url + "/todo-completed"
   else:
-    endpoint = "http://localhost:8000/todo-incomplete"
+    endpoint = base_url + "/todo-incomplete"
   # Send a POST request with the data and the endpoint URL
   response = requests.get(endpoint)
   # Check the status code of the response
@@ -93,7 +97,7 @@ def deleteToDoItems(item):
     bool
   """
 
-  endpoint = "http://localhost:8000/todo/" + str(item["Id"])
+  endpoint = base_url + "/todo/" + str(item["Id"])
   # Send a POST request with the data and the endpoint URL
   response = requests.delete(endpoint)
   # Check the status code of the response
