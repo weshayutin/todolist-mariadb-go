@@ -31,17 +31,51 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-// remote connection
-var db, _ = gorm.Open("mysql", "changeme:changeme@(mysql:3306)/todolist?charset=utf8&parseTime=True")
+var db *gorm.DB
 
-// local connection
-//var db, _ = gorm.Open("mysql", "root:root@tcp/todolist?charset=utf8&parseTime=True")
+func connectToDB() {
+	remote, err := connectToMariaDBRemote()
+	if err != nil {
+		local, _ := connectToMariaDBLocal()
+		db = local
+	} else {
+		db = remote
+	}
+}
+
+// connect to mariadb at 127.0.0.1
+func connectToMariaDBLocal() (*gorm.DB, error) {
+	log.Info("Attempting to connect to: test:test@tcp(127.0.0.1:3306)/todolist")
+	dsn := "test:test@tcp(127.0.0.1:3306)/todolist?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Error("Connection failed")
+		return nil, err
+	}
+
+	return db, nil
+}
+
+// connect to mariadb at mysql address defined in docker
+func connectToMariaDBRemote() (*gorm.DB, error) {
+	log.Info("Attempting to connect to: changeme:changeme@tcp(mysql:3306)/todolist")
+	// the user and passwd defined here match the templates in mysql-persistent.yaml.  Change as needed
+	dsn := "changeme:changeme@tcp(mysql:3306)/todolist?charset=utf8mb4&parseTime=True&loc=Local"
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Error("Connection failed")
+		return nil, err
+	}
+
+	return db, nil
+}
 
 type TodoItemModel struct {
 	Id          int `gorm:"primary_key"`
@@ -54,19 +88,25 @@ func CreateItem(w http.ResponseWriter, r *http.Request) {
 	log.WithFields(log.Fields{"description": description}).Info("Add new TodoItem. Saving to database.")
 	todo := &TodoItemModel{Description: description, Completed: false}
 	db.Create(&todo)
-	result := db.Last(&todo).Value
+	//result := db.Last(&todo).Value
+	//ModelTodo := &TodoItemModel{}
+	var ModelTodo []TodoItemModel
+	db.Debug().Last(&ModelTodo).Scan(&ModelTodo)
+	//log.Info(result.Statement.Dest)
+	log.Info("New Id of row: ", ModelTodo[0].Id)
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(result)
+	json.NewEncoder(w).Encode(&ModelTodo)
 }
 
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
 	// Get URL parameter from mux
 	vars := mux.Vars(r)
 	id, _ := strconv.Atoi(vars["id"])
+	log.Info("ID of item update from HTTP Request, ID:", id)
 
 	// Test if the TodoItem exist in DB
 	err := GetItemByID(id)
-	if err == false {
+	if err == false || id == 0 {
 		w.Header().Set("Content-Type", "application/json")
 		io.WriteString(w, `{"updated": false, "error": "Record Not Found"}`)
 	} else {
@@ -102,10 +142,11 @@ func DeleteItem(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetItemByID(Id int) bool {
-	todo := &TodoItemModel{}
-	result := db.First(&todo, Id)
+	//todo := &TodoItemModel{}
+	var todo []TodoItemModel
+	result := db.Debug().First(&todo, Id)
 	if result.Error != nil {
-		log.Warn("TodoItem not found in database")
+		log.Error("TodoItem not found in database")
 		return false
 	}
 	return true
@@ -127,8 +168,11 @@ func GetIncompleteItems(w http.ResponseWriter, r *http.Request) {
 
 func GetTodoItems(completed bool) interface{} {
 	var todos []TodoItemModel
-	TodoItems := db.Where("completed = ?", completed).Find(&todos).Value
-	return TodoItems
+	//var print_results []map[string]interface{}
+	db.Debug().Where("completed = ?", completed).Find(&todos).Scan(&todos)
+	//DebugTodoItems := db.Raw("SELECT * FROM `todo_item_models` WHERE completed = false").Scan(&todos)
+	log.Info(&todos)
+	return &todos
 }
 
 func Healthz(w http.ResponseWriter, r *http.Request) {
@@ -157,21 +201,19 @@ func prepopulate() {
 
 }
 
-func main() {
-	defer db.Close()
-	previousDb := db.Take(&TodoItemModel{})
-	if previousDb.Error != nil {
-		log.Info("A running instance of the db: todolist not found, creating")
-		db.Debug().DropTableIfExists(&TodoItemModel{})
-		db.Debug().AutoMigrate(&TodoItemModel{})
-		prepopulate()
-	}
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "favicon.ico")
+}
 
+func main() {
+	connectToDB()
+	db.Migrator().CreateTable(&TodoItemModel{})
 	fs := http.FileServer(http.Dir("./resources/"))
 
 	log.Info("Starting Todolist API server")
 	router := mux.NewRouter()
 	router.PathPrefix("/resources/").Handler(http.StripPrefix("/resources/", fs))
+	router.HandleFunc("/favicon.ico", faviconHandler)
 	router.HandleFunc("/", Home).Methods("GET")
 	router.HandleFunc("/healthz", Healthz).Methods("GET")
 	router.HandleFunc("/todo-completed", GetCompletedItems).Methods("GET")
