@@ -66,6 +66,7 @@ func connectToMariaDBLocal() (*gorm.DB, error) {
 // connect to mariadb at mysql address defined in docker
 func connectToMariaDBRemote() (*gorm.DB, error) {
 	log.Info("Attempting to connect to: changeme:changeme@tcp(mysql:3306)/todolist")
+	// the user and passwd defined here match the templates in mysql-persistent.yaml.  Change as needed
 	dsn := "changeme:changeme@tcp(mysql:3306)/todolist?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
