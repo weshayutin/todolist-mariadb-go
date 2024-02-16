@@ -1,0 +1,15 @@
+[Unit]
+Description=todolist-mariadb service
+
+# You may want to start after your network is ready
+After=cloud-init.target
+#Wants=cloud-init.target
+
+[Service]
+WorkingDirectory=/home/test/todolist-mariadb-go
+ExecStart=go run todolist.go
+Restart=Always
+PIDFile=/tmp/my_service_pid
+
+[Install]
+WantedBy=network-online.target
