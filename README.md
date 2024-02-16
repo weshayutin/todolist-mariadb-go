@@ -105,5 +105,32 @@ podman build  -t quay.io/rhn_engineering_whayutin/todolist-mariadb-go-2 .
 podman push
 ```
 
+## Build a VM w/ the todolist installed directly on the VM w/o containers
+* Note: this was tested with Fedora 39
+    * Fedora-Cloud-Base-39-1.5.x86_64.qcow2
+
+* get a RHEL, CentOS, or Fedora VM image.
+ * copy the qcow2 to /var/lib/libvirt/images
+ * update the cloud-init/todolist-data file with your public ssh keys
+ ```
+ ssh-authorized-keys:
+    - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPIXu6mcNuozbbovc7PLAQAgJFC3VcV4B9Z/mc089Ofv whayutin@redhat.com
+ ```
+ * copy the cloud-init/todolist-data to /var/lib/libvirt/boot/cloud-init/
+
+* sample virt-install
+```
+clear; sudo virt-install --name todolist-mariadb-1  --memory memory=3072  --cpu host --vcpus 2  --graphics none  --os-variant fedora39  --import  --disk /var/lib/libvirt/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2,format=qcow2,bus=virtio  --disk size=8 --network type=network,source=default,model=virtio  --cloud-init user-data=/var/lib/libvirt/boot/cloud-init/todolist-data
+```
+
+* wait for both the install and cloud-init to finish.
+* browse to the vm ip and port: `http://192.168.122.113:8000/` for example
+
+
+* If the cloud-init fails, test w/
+```
+sudo cloud-init schema --system
+```
+
 ## updates
 * Note that the app will NO longer create two items in the the todo list at start up. 
