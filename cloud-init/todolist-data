@@ -48,7 +48,9 @@ runcmd:
   - git clone https://github.com/weshayutin/todolist-mariadb-go.git
   - popd
   - pushd /home/test/todolist-mariadb-go 
-  - go mod tidy
-  - go run todolist.go
+  - cp systemd/todolist-mariadb.service /etc/systemd/user
+  - systemctl --user daemon-reload
+  - systemctl --user start todolist-mariadb.service
+  - systemctl --user enable todolist-mariadb.service
   - systemctl  disable  cloud-init
 # done

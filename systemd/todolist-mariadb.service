@@ -1,3 +1,6 @@
+# READ! This is a user daemon, start with:
+# systemctl --user start todolist-mariadb.service
+# systemctl --user status todolist-mariadb.service
 [Unit]
 Description=todolist-mariadb service
 
@@ -7,9 +10,11 @@ After=cloud-init.target
 
 [Service]
 WorkingDirectory=/home/test/todolist-mariadb-go
+ExecStartPre=go mod tidy
 ExecStart=go run todolist.go
 Restart=Always
 PIDFile=/tmp/my_service_pid
 
 [Install]
 WantedBy=network-online.target
+
