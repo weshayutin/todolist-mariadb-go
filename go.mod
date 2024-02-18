@@ -1,6 +1,6 @@
 module github.com/weshayutin/todolist-mariadb-go
 
-go 1.17
+go 1.21
 
 require (
 	github.com/go-sql-driver/mysql v1.7.0
