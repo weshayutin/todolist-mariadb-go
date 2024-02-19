@@ -6,6 +6,7 @@ Description=todolist-mariadb service
 After=mariadb.service
 
 [Service]
+Type=oneshot
 WorkingDirectory=/home/test/todolist-mariadb-go
 ExecStartPre=go mod tidy
 ExecStart=go run todolist.go
