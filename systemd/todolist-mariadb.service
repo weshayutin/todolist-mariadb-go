@@ -7,9 +7,9 @@ After=mariadb.service
 
 [Service]
 #Type=oneshot
-WorkingDirectory=/home/test/todolist-mariadb-go
+WorkingDirectory=/home/test/
 #ExecStartPre=go mod tidy
-ExecStart=/home/test/todolist-mariadb-go/todolist
+ExecStart=/home/test/todolist-linux-amd64
 #Restart=always
 PIDFile=/tmp/todolist_pid
 User=test
