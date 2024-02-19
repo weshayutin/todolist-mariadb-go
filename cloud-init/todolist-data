@@ -15,12 +15,11 @@ users:
  
 packages:
   - firewalld
-  - golang
-  - git
   - mariadb-server
   - net-tools
   - python-requests
   - vim
+  - wget
 
 runcmd:
   - systemctl stop firewalld
