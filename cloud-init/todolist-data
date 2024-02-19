@@ -33,6 +33,7 @@ runcmd:
   - git clone https://github.com/weshayutin/todolist-mariadb-go.git
   - popd
   - pushd /home/test/todolist-mariadb-go 
+  - cp /home/test/todolist-mariadb-go/BUILD/amd64/todolist /home/test/todolist-mariadb-go/
   - cp systemd/todolist-mariadb.service /etc/systemd/user
   - popd
   - sudo systemctl --user daemon-reload

@@ -6,11 +6,11 @@ Description=todolist-mariadb service
 After=mariadb.service
 
 [Service]
-Type=oneshot
+#Type=oneshot
 WorkingDirectory=/home/test/todolist-mariadb-go
-ExecStartPre=go mod tidy
-ExecStart=go run todolist.go
-Restart=always
+#ExecStartPre=go mod tidy
+ExecStart=/home/test/todolist-mariadb-go/todolist
+#Restart=always
 PIDFile=/tmp/todolist_pid
 User=test
 Group=test
