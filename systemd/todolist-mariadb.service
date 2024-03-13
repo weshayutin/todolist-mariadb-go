@@ -16,4 +16,4 @@ User=test
 Group=test
 
 [Install]
-WantedBy=multiuser.target
+WantedBy=multi-user.target
