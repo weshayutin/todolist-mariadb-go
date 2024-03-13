@@ -99,7 +99,13 @@ python test.py
 ```
 
 ## building
-Here's a quick example:
+Build for release:
+```
+./build.sh
+```
+
+Build a new container:
+Here's a quick example
 ```
 podman build  -t quay.io/rhn_engineering_whayutin/todolist-mariadb-go-2 .
 podman push
