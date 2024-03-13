@@ -1,6 +1,6 @@
 # READ! This is a user daemon, start with:
-# systemctl --user start todolist-mariadb.service
-# systemctl --user status todolist-mariadb.service
+# systemctl start todolist-mariadb.service
+# systemctl status todolist-mariadb.service
 [Unit]
 Description=todolist-mariadb service
 After=mariadb.service
@@ -16,4 +16,4 @@ User=test
 Group=test
 
 [Install]
-WantedBy=basic.target
+WantedBy=multiuser.target
