@@ -11,6 +11,8 @@ https://github.com/sdil/learning/blob/master/go/todolist-mysql-go/todolist.go
 ```
 docker/podman run -d -p 3306:3306 --name mariadb -e MYSQL_ROOT_PASSWORD=root mariadb
 docker/podman exec -it mariadb mariadb -uroot -proot -e 'CREATE DATABASE todolist'
+podman exec -it mariadb mariadb -uroot -proot -e "CREATE USER 'test'@'%' IDENTIFIED BY 'test';"
+podman exec -it mariadb mariadb -uroot -proot -e "GRANT ALL PRIVILEGES ON todolist.* TO 'test';" 
 
 ```
 ### Note: Mariadb password settings:
@@ -110,6 +112,9 @@ Here's a quick example
 podman build  -t quay.io/rhn_engineering_whayutin/todolist-mariadb-go-2 .
 podman push
 ```
+
+## build for multi-arch
+https://developers.redhat.com/articles/2023/11/03/how-build-multi-architecture-container-images#benefits_of_multi_architecture_containers
 
 ## Build a VM w/ the todolist installed directly on the VM w/o containers
 * Note: this was tested with Fedora 39

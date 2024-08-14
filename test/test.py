@@ -6,7 +6,7 @@ import requests
 
 base_url = "http://localhost:8000"
 # example remote
-# base_url = "http://todolist-route-mysql-persistent.apps.cluster-wdh01102024g.wdh01102024g.mg.dog8code.com"
+#base_url = "http://todolist-route-mysql-persistent.apps.wdharm41607261.migration.redhat.com"
 
 def updateToDo(id, completed):
   """Update data to the todo application
