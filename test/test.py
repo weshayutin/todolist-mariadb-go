@@ -1,17 +1,18 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+import argparse
 from datetime import datetime
 import json
 import requests
 
 
-base_url = "http://localhost:8000"
-# example remote
-#base_url = "http://todolist-route-mysql-persistent.apps.wdharm41607261.migration.redhat.com"
 
-def updateToDo(id, completed):
+def updateToDo(base_url, id, completed):
   """Update data to the todo application
 
   Args:
+    base_url: url
     item_dict: dict of todo item
     completed: bool
 
@@ -36,10 +37,11 @@ def updateToDo(id, completed):
       return False
   
 
-def createToDo(description, completed):
+def createToDo(base_url, description, completed):
   """Post data to the todo application
 
   Args:
+    base_url: url
     description: todo list description
     completed: bool
 
@@ -63,10 +65,11 @@ def createToDo(description, completed):
   response_dict = json.loads(response.text)[0]
   return response_dict
 
-def checkToDoLists(completed):
+def checkToDoLists(base_url, completed):
   """Post data to the todo application
 
   Args:
+    base_url: url
     completed: bool
 
   Returns:
@@ -87,10 +90,33 @@ def checkToDoLists(completed):
   response_dict = json.loads(response.text)
   return response_dict
 
-def deleteToDoItems(item):
+def checkAppLog(base_url):
+  """Get log data from the todo application
+  Args:
+    base_url: url
+
+  Returns:
+    bool 
+  """
+  log = False
+  endpoint = base_url + "/log"
+
+  # Send a POST request with the data and the endpoint URL
+  response = requests.get(endpoint)
+  # Check the status code of the response
+  if response.status_code == 201 or response.status_code == 200:
+      print("Got the log")
+      log = True
+  else:
+      print("Failed to get the app log")
+      log = False
+  return log
+
+def deleteToDoItems(base_url,item):
   """Post data to the todo application
 
   Args:
+    base_url: url
     item: dict
 
   Returns:
@@ -111,19 +137,31 @@ def deleteToDoItems(item):
 
 
 def main():
+   # Define the argument parser
+   parser = argparse.ArgumentParser(description='Test the todo application.')
+
+   # Add an argument for the base URL
+   parser.add_argument('--base_url', default="http://localhost:8000",
+                      help='The base URL of the todo application.')
+
+   # Parse the arguments
+   args = parser.parse_args()
+   base_url = args.base_url
+
+   # create date
    date = datetime.today().strftime('%Y-%m-%d-%H:%M:%S')
    # create todo items
-   test1 = createToDo("pytest-1-" + date, False)
-   test2 = createToDo("pytest-2-" + date, False)
-   test3 = createToDo("pytest-1-" + date, False)
+   test1 = createToDo(base_url, "pytest-1-" + date, False)
+   test2 = createToDo(base_url, "pytest-2-" + date, False)
+   test3 = createToDo(base_url, "pytest-1-" + date, False)
 
    # update todo items
-   success = updateToDo(test1["Id"], True)
-   success = updateToDo(test2["Id"], True)
+   success = updateToDo(base_url, test1["Id"], True)
+   success = updateToDo(base_url, test2["Id"], True)
 
    # check todo's
-   completed = checkToDoLists(True)
-   incomplete = checkToDoLists(False)
+   completed = checkToDoLists(base_url, True)
+   incomplete = checkToDoLists(base_url, False)
    print("COMPLETED ITEMS:")
    print(completed)
    print("INCOMPLETE ITEMS:")
@@ -146,10 +184,10 @@ def main():
       print("SUCCESS!")
 
    # Delete items
-   deleteToDoItems(test1)
-   deleteToDoItems(test3)
-   completed = checkToDoLists(True)
-   incomplete = checkToDoLists(False)
+   deleteToDoItems(base_url, test1)
+   deleteToDoItems(base_url, test3)
+   completed = checkToDoLists(base_url, True)
+   incomplete = checkToDoLists(base_url, False)
    print("COMPLETED ITEMS:")
    print(completed)
    print("INCOMPLETE ITEMS:")
@@ -170,6 +208,12 @@ def main():
       print("FAILED Delete TEST")
    else:
       print("SUCCESS!")
+
+   # Test the app log
+   if checkAppLog(base_url):
+     print("LOG FOUND: SUCCESS!")
+   else:
+     print("FAILED!")
    
 
 

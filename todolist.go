@@ -24,8 +24,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 
@@ -33,6 +35,7 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	"github.com/rs/cors"
+	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -201,11 +204,34 @@ func prepopulate() {
 
 }
 
+func GetLogFile(w http.ResponseWriter, r *http.Request) {
+	// if file not found we simply get a 404
+	filename := "/tmp/log/todoapp/app.log"
+	http.ServeFile(w, r, filename)
+}
+
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "favicon.ico")
 }
 
 func main() {
+	// logging to volume
+	if _, err := os.Stat("/tmp/log/todoapp"); os.IsNotExist(err) {
+		os.MkdirAll("/tmp/log/todoapp", 0700)
+	}
+	f, err := os.OpenFile("/tmp/log/todoapp/app.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	// if directory or volume is not mounted, do not exit
+	if err != nil {
+		fmt.Println("Failed to create logfile" + "logrus.txt")
+		logrus.Info("Failed: log file /tmp/log/todoapp/app.log create failed")
+		f.Close()
+	} else {
+		defer f.Close()
+		multi := io.MultiWriter(f, os.Stdout)
+		logrus.SetOutput(multi)
+		logrus.Info("Success: Attached volume and redirected logs to /tmp/log/todoapp/app.log")
+	}
+
 	connectToDB()
 	db.Migrator().CreateTable(&TodoItemModel{})
 	fs := http.FileServer(http.Dir("./resources/"))
@@ -216,6 +242,7 @@ func main() {
 	router.HandleFunc("/favicon.ico", faviconHandler)
 	router.HandleFunc("/", Home).Methods("GET")
 	router.HandleFunc("/healthz", Healthz).Methods("GET")
+	router.HandleFunc("/log", GetLogFile).Methods("GET")
 	router.HandleFunc("/todo-completed", GetCompletedItems).Methods("GET")
 	router.HandleFunc("/todo-incomplete", GetIncompleteItems).Methods("GET")
 	router.HandleFunc("/todo", CreateItem).Methods("POST")
